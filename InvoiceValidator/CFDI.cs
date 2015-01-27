@@ -30,6 +30,7 @@ namespace InvoiceValidator
 
 	/// <summary>
 	/// By default Schema is http://www.sat.gob.mx/cfd/3
+	/// <param name="xml">It can be either XML Path or XML String.</param>
 	/// </summary>
 	public CFDI(string xsdpath, string xml)
 	  : base(null, xsdpath, xml)
@@ -39,6 +40,7 @@ namespace InvoiceValidator
 
 	/// <summary>
 	/// By default Schema is http://www.sat.gob.mx/cfd/3 and XsdPath is cfdv32.xsd
+	/// <param name="xml">It can be either XML Path or XML String.</param>
 	/// </summary>	
 	public CFDI(string xml)
 	  : this(null, xml) 
@@ -46,6 +48,10 @@ namespace InvoiceValidator
 	  _xsdpath = CFDI_XSD;
 	}
 
+	/// <summary>
+	/// By default Schema is http://www.sat.gob.mx/cfd/3
+	/// </summary>
+	/// <param name="xml">It can be either XML Path or XML String.</param>
 	public CFDI(string schema, string xsdpath, string xml)
 	  : base(schema, xsdpath, xml) {}
 	#endregion
