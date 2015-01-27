@@ -1683,6 +1683,7 @@ namespace InvoiceValidator.CFDIClasses
   {
 
 	private System.Xml.XmlElement[] anyField;
+	private TimbreFiscalDigital timbre;
 
 	/// <comentarios/>
 	[System.Xml.Serialization.XmlAnyElementAttribute()]
@@ -1696,6 +1697,24 @@ namespace InvoiceValidator.CFDIClasses
 	  {
 		this.anyField = value;
 	  }
+	}
+
+	public TimbreFiscalDigital Timbre
+	{
+	  get
+	  {
+		System.Xml.XmlDocument Doc = new System.Xml.XmlDocument();
+		System.Collections.Generic.List<System.Xml.XmlElement> ComplementNodeList = new System.Collections.Generic.List<System.Xml.XmlElement>(Any);
+
+		if (ComplementNodeList.Exists(x => x.Name.Equals(CFDI.CFDI_TFD)))
+		{		  
+		  Doc.LoadXml(ComplementNodeList.Find(x => x.Name.Equals(CFDI.CFDI_TFD)).OuterXml);
+		  this.timbre = (TimbreFiscalDigital)BaseValidator.Deserialize(Doc, typeof(TimbreFiscalDigital));
+		}
+
+		return this.timbre; 
+	  }
+	  set { this.timbre = value; }
 	}
   }
 

@@ -43,6 +43,7 @@
     <Compile Include="App_Code\BaseValidator.cs" />
     <Compile Include="App_Code\GeneratedCode\cfdv2.cs" />
     <Compile Include="App_Code\GeneratedCode\cfdv32.cs" />
+    <Compile Include="App_Code\GeneratedCode\TimbreFiscalDigital.cs" />
     <Compile Include="CFD.cs" />
     <Compile Include="CFDI.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

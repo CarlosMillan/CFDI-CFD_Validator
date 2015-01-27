@@ -17,11 +17,12 @@ namespace InvoiceValidator
 	private readonly string CFDI_SCHEMA = "http://www.sat.gob.mx/cfd/3";
 	private readonly string CFDI_XSD = "./ValidatorXSD/cfdv32.xsd";
 	private readonly string CFDI_COMPLEMENT_NODE = "cfdi:Complemento";
-	private readonly string CFDI_TFD_NODE = "tfd:TimbreFiscalDigital";
+	private static readonly string CFDI_TFD_NODE = "tfd:TimbreFiscalDigital";
 	#endregion
 
 	#region Properties
-	public InvoiceValidator.CFDIClasses.Comprobante Comprobante { get { return _comprobante; } } 
+	public InvoiceValidator.CFDIClasses.Comprobante Comprobante { get { return _comprobante; } }
+	public static string CFDI_TFD { get { return CFDI_TFD_NODE; } }
 	#endregion
 
 	#region Constructors
@@ -30,8 +31,8 @@ namespace InvoiceValidator
 	/// <summary>
 	/// By default Schema is http://www.sat.gob.mx/cfd/3
 	/// </summary>
-	public CFDI(string xsdpath, string xmlpath)
-	  : base(null, xsdpath, xmlpath)
+	public CFDI(string xsdpath, string xml)
+	  : base(null, xsdpath, xml)
 	{
 	  _schema = CFDI_SCHEMA;
 	}
@@ -39,14 +40,14 @@ namespace InvoiceValidator
 	/// <summary>
 	/// By default Schema is http://www.sat.gob.mx/cfd/3 and XsdPath is cfdv32.xsd
 	/// </summary>	
-	public CFDI(string xmlpath)
-	  : this(null, xmlpath) 
+	public CFDI(string xml)
+	  : this(null, xml) 
 	{
 	  _xsdpath = CFDI_XSD;
 	}
 
-	public CFDI(string schema, string xsdpath, string xmlpath)
-	  : base(schema, xsdpath, xmlpath) {}
+	public CFDI(string schema, string xsdpath, string xml)
+	  : base(schema, xsdpath, xml) {}
 	#endregion
 
 	#region Public Methods
@@ -54,13 +55,17 @@ namespace InvoiceValidator
 	{
 	  try
 	  {
-		if (_schema != null && _xsdpath != null && _xmlpath != null)
+		if (_schema != null && _xsdpath != null && (_xmlpath != null || _xmlstring != null))
 		{
-		  string XMLPath = _xmlpath;
+		  string XML = _xmlpath ?? _xmlstring;
 		  string CfdiTmpName = null;
 		  string CfdiTfdTmpName = null;
 		  XmlDocument XmlTmp = new XmlDocument();
-		  XmlTmp.Load(_xmlpath);
+
+		  if (_fromfile)
+			XmlTmp.Load(XML);
+		  else
+			XmlTmp.LoadXml(XML);
 
 		  if (!XmlTmp.DocumentElement.Prefix.Equals("cfdi"))
 			throw new Exception(String.Concat("El archivi '", _xmlfilename, "' no es un CFDI."));
@@ -80,12 +85,12 @@ namespace InvoiceValidator
 			}
 
 			ComplementNode[0].ParentNode.RemoveChild(ComplementNode[0]);
-			XMLPath = String.Concat(WORKING_DIRECTORY, CfdiTmpName);
-			XmlTmp.Save(XMLPath);
+			XML = String.Concat(WORKING_DIRECTORY, CfdiTmpName);
+			XmlTmp.Save(XML);
 		  }
 
 		  if (_isvalid)
-			ValidateInvoice(_schema, _xsdpath, XMLPath);
+			ValidateInvoice(_schema, _xsdpath, XML);
 		}
 		else
 		  throw new Exception("You must set a value for Schema, XsdPath and XmlPath variables.");

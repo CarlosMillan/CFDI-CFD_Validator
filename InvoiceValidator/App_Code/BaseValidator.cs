@@ -16,12 +16,14 @@ namespace InvoiceValidator
 	  protected string _schema;
 	  protected string _xsdpath;
 	  protected string _xmlpath;
+	  protected string _xmlstring;
 	  protected bool _isvalid;
 	  protected List<string> _messages;
 	  protected XmlDocument _xmldocument;
 	  protected string _rootpath;
 	  protected string _xmlfilename;
 	  protected readonly string WORKING_DIRECTORY = "./ValidatorTmp";
+	  protected bool _fromfile;
 	  #endregion
 
 	  #region Properties
@@ -35,15 +37,25 @@ namespace InvoiceValidator
 	  #region Constructurs
 	  public BaseValidator() :this(null, null, null){ }
 
-	  public BaseValidator(string schema, string xsdpath, string xmlpath) 
+	  public BaseValidator(string schema, string xsdpath, string xml) 
 	  {
 		_schema = schema;
-		_xsdpath = xsdpath;
-		_xmlpath = xmlpath;
+		_xsdpath = xsdpath;		
 		_messages = new List<string>();
 		_rootpath = Path.GetDirectoryName(_xsdpath);
 		_xmlfilename = Path.GetFileNameWithoutExtension(_xmlpath);		
-		_isvalid = true;		
+		_isvalid = true;
+
+		if (File.Exists(xml))
+		{
+		  _fromfile = true;
+		  _xmlpath = xml;
+		}
+		else
+		{
+		  _fromfile = false;
+		  _xmlstring = xml; 
+		}
 
 		try
 		{
@@ -101,16 +113,20 @@ namespace InvoiceValidator
 	  #region Generate
 	  protected void CreateXmlDocument()
 	  {
-		if (_xmlpath != null && _isvalid)
+		if ((_xmlpath != null || _xmlstring != null) && _isvalid)
 		{
 		  _xmldocument = new XmlDocument();
-		  _xmldocument.Load(_xmlpath);		  
+
+		  if(_fromfile)
+			_xmldocument.Load(_xmlpath);
+		  else
+			_xmldocument.LoadXml(_xmlstring);
 		}
 		else
 		  throw new Exception("You must validate the invoice width Validate() method and the invoice must be valid.");
 	  }
 
-	  protected static object Deserialize(XmlDocument xml, Type type)
+	  public static object Deserialize(XmlDocument xml, Type type)
 	  {
 		XmlSerializer s = new XmlSerializer(type);
 		string xmlString = xml.OuterXml.ToString();
