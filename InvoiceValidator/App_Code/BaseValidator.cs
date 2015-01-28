@@ -22,7 +22,7 @@ namespace InvoiceValidator
 	  protected XmlDocument _xmldocument;
 	  protected string _rootpath;
 	  protected string _xmlfilename;
-	  protected readonly string WORKING_DIRECTORY = "./ValidatorTmp";
+	  protected readonly string WORKING_DIRECTORY = @"C:\ValidatorTmp";
 	  protected bool _fromfile;
 	  #endregion
 
