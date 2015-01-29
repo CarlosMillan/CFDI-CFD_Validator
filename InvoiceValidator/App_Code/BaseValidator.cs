@@ -21,8 +21,7 @@ namespace InvoiceValidator
 	  protected List<string> _messages;
 	  protected XmlDocument _xmldocument;
 	  protected string _rootpath;
-	  protected string _xmlfilename;
-	  protected readonly string WORKING_DIRECTORY = @"C:\ValidatorTmp";
+	  protected string _xmlfilename;	  
 	  protected bool _fromfile;
 	  #endregion
 
@@ -35,47 +34,45 @@ namespace InvoiceValidator
 	  #endregion
 
 	  #region Constructurs
-	  public BaseValidator() :this(null, null, null){ }
-
 	  public BaseValidator(string schema, string xsdpath, string xml) 
 	  {
 		_schema = schema;
 		_xsdpath = xsdpath;		
 		_messages = new List<string>();
-		_rootpath = Path.GetDirectoryName(_xsdpath);
-		_xmlfilename = Path.GetFileNameWithoutExtension(_xmlpath);		
+		_rootpath = Path.GetDirectoryName(_xsdpath);	
 		_isvalid = true;
 
 		if (File.Exists(xml))
 		{
 		  _fromfile = true;
 		  _xmlpath = xml;
+		  _xmlfilename = Path.GetFileNameWithoutExtension(_xmlpath);
 		}
 		else
 		{
 		  _fromfile = false;
 		  _xmlstring = xml; 
 		}
-
-		try
-		{
-		  if (!System.IO.Directory.Exists(WORKING_DIRECTORY))
-			System.IO.Directory.CreateDirectory(WORKING_DIRECTORY);
-		  else
-			ClearTemporalFiles();
-		}
-		catch { }
 	  }
 	  #endregion
 
 	  #region Validate
-	  protected void ValidateInvoice(string schema, string xsdpath, string xmlpath)
+	  protected void ValidateInvoice(string schema, string xsdpath, string xml)
 	  {
-		XmlReaderSettings SettingsToCompare = new XmlReaderSettings();
-		SettingsToCompare.Schemas.Add(schema, xsdpath);
-		SettingsToCompare.ValidationType = ValidationType.Schema;
-		SettingsToCompare.ValidationEventHandler += Settings_ValidationEventHandler;
-		XmlReader ToValidate = XmlReader.Create(xmlpath, SettingsToCompare);
+		XmlReader ToValidate = null;
+
+		try
+		{
+		  XmlReaderSettings SettingsToCompare = new XmlReaderSettings();
+		  SettingsToCompare.Schemas.Add(schema, xsdpath);
+		  SettingsToCompare.ValidationType = ValidationType.Schema;
+		  SettingsToCompare.ValidationEventHandler += Settings_ValidationEventHandler;
+		  ToValidate = XmlReader.Create(new StringReader(xml), SettingsToCompare);
+		}
+		catch (System.ArgumentNullException E)
+		{
+		  throw new Exception("XSD missing");
+		}
 
 		try
 		{		  
@@ -97,16 +94,6 @@ namespace InvoiceValidator
 		  _messages.Add(String.Concat(XmlSeverityType.Error.ToString(), ":", e.Message));
 		  _isvalid = false;
 		}
-	  }
-
-	  protected void ClearTemporalFiles()
-	  { 
-		try
-		{
-		  Array.ForEach(Directory.GetFiles(WORKING_DIRECTORY),
-						delegate(string path) { File.Delete(path); });
-		}
-		catch { }		
 	  }
 	  #endregion
 

@@ -10,40 +10,27 @@ namespace InvoiceValidator
   {
 	#region Fileds
 	private InvoiceValidator.CFDClasses.Comprobante _comprobante;		
-	private readonly string CFDI_SCHEMA = "http://www.sat.gob.mx/cfd/2";
-	private readonly string CFDI_XSD = "./ValidatorXSD/cfdv2.xsd";
-	private readonly string CFDI_COMPLEMENT_NODE = "Complemento";	
+	private readonly string CFD_SCHEMA = "http://www.sat.gob.mx/cfd/2";	
+	private readonly string CFD_COMPLEMENT_NODE = "Complemento";	
 	#endregion
 
 	#region Properties
 	public InvoiceValidator.CFDClasses.Comprobante Comprobante { get { return _comprobante; } }
 	#endregion
 
-	#region Constructors
-	public CFD() :base() { }
-
+	#region Constructors	
 	/// <summary>
 	/// By default Schema is http://www.sat.gob.mx/cfd/2
-	/// /// <param name="xml">It can be either XML Path or XML String.</param>
+	/// <param name="xml">It can be either XML Path or XML String.</param>
 	/// </summary>
 	public CFD(string xsdpath, string xml)
 	  : base(null, xsdpath, xml)
 	{
-	  _schema = CFDI_SCHEMA;
+	  _schema = CFD_SCHEMA;	  
 	}
 
 	/// <summary>
-	/// By default Schema is http://www.sat.gob.mx/cfd/2 and XsdPath is cfdv32.xsd
-	/// <param name="xml">It can be either XML Path or XML String.</param>
-	/// </summary>	
-	public CFD(string xml)
-	  : this(null, xml) 
-	{
-	  _xsdpath = CFDI_XSD;
-	}
-
-	/// <summary>
-	/// 
+	/// By default Schema is http://www.sat.gob.mx/cfd/2
 	/// </summary>
 	/// <param name="xml">It can be either XML Path or XML String.</param>
 	public CFD(string schema, string xsdpath, string xml)
@@ -55,8 +42,7 @@ namespace InvoiceValidator
 	{
 	  if (_schema != null && _xsdpath != null && (_xmlpath != null || _xmlstring != null))
 	  {
-		string XML = _xmlpath ?? _xmlstring;
-		string CfdiTmpName = null;
+		string XML = _xmlpath ?? _xmlstring;		
 		XmlDocument XmlTmp = new XmlDocument();
 
 		if (_fromfile)
@@ -64,14 +50,12 @@ namespace InvoiceValidator
 		else
 		  XmlTmp.LoadXml(XML);
 
-		XmlNodeList ComplementNode = XmlTmp.GetElementsByTagName(CFDI_COMPLEMENT_NODE);
+		XmlNodeList ComplementNode = XmlTmp.GetElementsByTagName(CFD_COMPLEMENT_NODE);
 
 		if (ComplementNode.Count > 0)
 		{
-		  CfdiTmpName = String.Concat("/", _xmlfilename, "tmp.xml");
-		  ComplementNode[0].ParentNode.RemoveChild(ComplementNode[0]);
-		  XML = String.Concat(WORKING_DIRECTORY, CfdiTmpName);
-		  XmlTmp.Save(XML);
+		  XmlTmp.DocumentElement.RemoveChild(ComplementNode[0]);
+		  XML = XmlTmp.InnerXml;
 		}
 
 		ValidateInvoice(_schema, _xsdpath, XML);
