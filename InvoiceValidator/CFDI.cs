@@ -16,6 +16,7 @@ namespace InvoiceValidator
 	private readonly string CFDI_SCHEMA = "http://www.sat.gob.mx/cfd/3";	
 	private readonly string CFDI_COMPLEMENT_NODE = "cfdi:Complemento";
 	private static readonly string CFDI_TFD_NODE = "tfd:TimbreFiscalDigital";
+	private readonly string CFDI_ADDENDA_NODE = "cfdi:Addenda";
 	private string _xsdtfdpath;
 	#endregion
 
@@ -27,8 +28,8 @@ namespace InvoiceValidator
 	#region Constructors	
 	/// <summary>
 	/// By default Schema is http://www.sat.gob.mx/cfd/3
-	/// <param name="xml">It can be either XML Path or XML String.</param>
 	/// </summary>
+	/// <param name="xml">It can be either XML Path or XML String.</param>
 	public CFDI(string xsdpath, string xsdtfdpath, string xml)
 	  : base(null, xsdpath, xml)
 	{
@@ -72,7 +73,9 @@ namespace InvoiceValidator
 			throw new Exception(String.Concat("File '", _xmlfilename, "' is not a CFDI."));
 
 		  XmlNodeList ComplementNode = XmlTmp.GetElementsByTagName(CFDI_COMPLEMENT_NODE);
+		  XmlNodeList AddendaNode = XmlTmp.GetElementsByTagName(CFDI_ADDENDA_NODE);
 
+		  #region Complement node
 		  if (ComplementNode.Count > 0)
 		  {
 			XmlNodeList TfdNode = XmlTmp.GetElementsByTagName(CFDI_TFD_NODE);
@@ -83,6 +86,15 @@ namespace InvoiceValidator
 			XmlTmp.DocumentElement.RemoveChild(ComplementNode[0]);
 			XML = XmlTmp.InnerXml;
 		  }
+		  #endregion 
+
+		  #region Addenda node
+		  if (AddendaNode.Count > 0)
+		  {
+			XmlTmp.DocumentElement.RemoveChild(AddendaNode[0]);
+			XML = XmlTmp.InnerXml;
+		  }
+		  #endregion
 
 		  if (_isvalid)
 			ValidateInvoice(_schema, _xsdpath, XML);
