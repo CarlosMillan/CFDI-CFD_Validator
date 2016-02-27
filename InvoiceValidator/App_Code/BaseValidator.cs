@@ -64,7 +64,7 @@ namespace InvoiceValidator
 		try
 		{
 		  XmlReaderSettings SettingsToCompare = new XmlReaderSettings();
-		  SettingsToCompare.Schemas.Add(schema, xsdpath);
+		  SettingsToCompare.Schemas.Add(schema, xsdpath);         
 		  SettingsToCompare.ValidationType = ValidationType.Schema;
 		  SettingsToCompare.ValidationEventHandler += Settings_ValidationEventHandler;
 		  ToValidate = XmlReader.Create(new StringReader(xml), SettingsToCompare);
@@ -84,6 +84,37 @@ namespace InvoiceValidator
 		  throw E;
 		}		
 	  }
+
+        //Cargar los esquemas que vengan en el xml
+      protected void ValidateInvoice(string xml)
+      {
+          XmlReader ToValidate = null;
+
+          try
+          {
+              XmlReaderSettings SettingsToCompare = new XmlReaderSettings();
+              SettingsToCompare.Schemas.Add(schema, xsdpath);
+              SettingsToCompare.Schemas.Add("http://www.sat.gob.mx/iedu", "http://www.sat.gob.mx/sitio_internet/cfd/iedu/iedu.xsd");
+              SettingsToCompare.Schemas.Add("http://www.sat.gob.mx/TimbreFiscalDigital", "http://www.sat.gob.mx/TimbreFiscalDigital/TimbreFiscalDigital.xsd");
+              SettingsToCompare.ValidationType = ValidationType.Schema;
+              SettingsToCompare.ValidationEventHandler += Settings_ValidationEventHandler;
+              ToValidate = XmlReader.Create(new StringReader(xml), SettingsToCompare);
+          }
+          catch (System.ArgumentNullException E)
+          {
+              throw new Exception("XSD missing");
+          }
+
+          try
+          {
+              while (ToValidate.Read()) { }
+          }
+          catch (Exception E)
+          {
+              _isvalid = false;
+              throw E;
+          }
+      }
 
 	  protected void Settings_ValidationEventHandler(object sender, System.Xml.Schema.ValidationEventArgs e)
 	  {

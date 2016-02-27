@@ -76,16 +76,16 @@ namespace InvoiceValidator
 		  XmlNodeList AddendaNode = XmlTmp.GetElementsByTagName(CFDI_ADDENDA_NODE);
 
 		  #region Complement node
-		  if (ComplementNode.Count > 0)
-		  {
-			XmlNodeList TfdNode = XmlTmp.GetElementsByTagName(CFDI_TFD_NODE);
+          if (ComplementNode.Count > 0)
+          {
+              //XmlNodeList TfdNode = XmlTmp.GetElementsByTagName(CFDI_TFD_NODE);
 
-			if (TfdNode.Count > 0)
-			  ValidateInvoice(TFD_SCHEMA, this._xsdtfdpath, TfdNode[0].OuterXml);
-			
-			XmlTmp.DocumentElement.RemoveChild(ComplementNode[0]);
-			XML = XmlTmp.InnerXml;
-		  }
+              //if (TfdNode.Count > 0)
+              //    ValidateInvoice(TFD_SCHEMA, this._xsdtfdpath, TfdNode[0].OuterXml);
+
+              //XmlTmp.DocumentElement.RemoveChild(ComplementNode[0]);
+              XML = XmlTmp.InnerXml;
+          }
 		  #endregion 
 
 		  #region Addenda node
