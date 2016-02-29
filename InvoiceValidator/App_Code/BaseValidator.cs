@@ -94,7 +94,7 @@ namespace InvoiceValidator
 		  SettingsToCompare.ValidationEventHandler += Settings_ValidationEventHandler;
 		  ToValidate = XmlReader.Create(new StringReader(xml), SettingsToCompare);
 		}
-		catch (System.ArgumentNullException E)
+		catch (System.ArgumentNullException)
 		{
 		  throw new Exception("XSD missing");
 		}
@@ -149,7 +149,7 @@ namespace InvoiceValidator
               SettingsToCompare.ValidationEventHandler += Settings_ValidationEventHandler;
               ToValidate = XmlReader.Create(new StringReader(xmlstring), SettingsToCompare);
           }
-          catch (System.ArgumentNullException E)
+          catch (System.ArgumentNullException)
           {
               throw new Exception("XSD missing");
           }
