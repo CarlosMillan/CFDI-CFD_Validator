@@ -12,6 +12,8 @@ namespace InvoiceValidator
 {
     public abstract class BaseValidator
 	{
+      protected readonly string WORKAREA = "./ValidatorXSD";
+
 	  #region Fileds
 	  protected string _schema;
 	  protected string _xsdpath;
@@ -34,6 +36,9 @@ namespace InvoiceValidator
 	  #endregion
 
 	  #region Constructurs
+      /// <summary>
+      /// Deprecated.
+      /// </summary>
 	  public BaseValidator(string schema, string xsdpath, string xml) 
 	  {
 		_schema = schema;
@@ -41,6 +46,7 @@ namespace InvoiceValidator
 		_messages = new List<string>();
 		_rootpath = Path.GetDirectoryName(_xsdpath);	
 		_isvalid = true;
+        _messages = new List<string>();
 
 		if (File.Exists(xml))
 		{
@@ -54,6 +60,25 @@ namespace InvoiceValidator
 		  _xmlstring = xml; 
 		}
 	  }
+
+      public BaseValidator(string xml)
+      {
+          _isvalid = true;
+          _messages = new List<string>();
+
+          if (File.Exists(xml))
+          {
+              _fromfile = true;
+              _xmlpath = xml;
+              _xmlfilename = Path.GetFileNameWithoutExtension(_xmlpath);
+              _xmlstring = System.IO.File.ReadAllText(_xmlpath);
+          }
+          else
+          {
+              _fromfile = false;
+              _xmlstring = xml;
+          }
+      }
 	  #endregion
 
 	  #region Validate
@@ -85,20 +110,44 @@ namespace InvoiceValidator
 		}		
 	  }
 
-        //Cargar los esquemas que vengan en el xml
-      protected void ValidateInvoice(string xml)
+      /// <summary>
+      /// Validates an XML string with assigned schemas.
+      /// </summary>
+      /// <param name="schemas">Key-Value schemas</param>
+      /// <param name="xmlstring">XML in string format.</param>
+      protected void ValidateInvoice(List<KeyValuePair<string, string>> schemas, string xmlstring)
       {
+          
           XmlReader ToValidate = null;
 
           try
           {
               XmlReaderSettings SettingsToCompare = new XmlReaderSettings();
-              SettingsToCompare.Schemas.Add(schema, xsdpath);
-              SettingsToCompare.Schemas.Add("http://www.sat.gob.mx/iedu", "http://www.sat.gob.mx/sitio_internet/cfd/iedu/iedu.xsd");
-              SettingsToCompare.Schemas.Add("http://www.sat.gob.mx/TimbreFiscalDigital", "http://www.sat.gob.mx/TimbreFiscalDigital/TimbreFiscalDigital.xsd");
+
+              foreach (KeyValuePair<string, string> SchemaEntry in schemas)
+              {
+                  try
+                  {
+                      SettingsToCompare.Schemas.Add(SchemaEntry.Key, SchemaEntry.Value);
+                  }
+                  catch (System.Net.WebException)
+                  {
+                      string LocalXSD = WORKAREA + "/" + UrlSchemaToDirectoryName(SchemaEntry.Key) + "/" + Path.GetFileName(SchemaEntry.Value);
+
+                      if (File.Exists(LocalXSD))
+                          SettingsToCompare.Schemas.Add(SchemaEntry.Key, LocalXSD);
+                      else
+                      {
+                          _isvalid = false;
+                          _messages.Add("El esquema " + SchemaEntry.Value + "' no está diponible. Esto se debe a que tu conexión a internet está fallando o el esquema no es accesible de momento.");
+                          return;
+                      }
+                  }
+              }
+             
               SettingsToCompare.ValidationType = ValidationType.Schema;
               SettingsToCompare.ValidationEventHandler += Settings_ValidationEventHandler;
-              ToValidate = XmlReader.Create(new StringReader(xml), SettingsToCompare);
+              ToValidate = XmlReader.Create(new StringReader(xmlstring), SettingsToCompare);
           }
           catch (System.ArgumentNullException E)
           {
@@ -122,13 +171,16 @@ namespace InvoiceValidator
 		  _messages.Add(String.Concat(XmlSeverityType.Warning.ToString(), ":", e.Message));		
 		else if (e.Severity == XmlSeverityType.Error)
 		{
-		  _messages.Add(String.Concat(XmlSeverityType.Error.ToString(), ":", e.Message));
+          _messages.Add(String.Concat(XmlSeverityType.Error.ToString(), ":", e.Message));
 		  _isvalid = false;
 		}
 	  }
 	  #endregion
 
 	  #region Generate
+      /// <summary>
+      /// Deprecated.
+      /// </summary>
 	  protected void CreateXmlDocument()
 	  {
 		if ((_xmlpath != null || _xmlstring != null) && _isvalid)
@@ -143,6 +195,21 @@ namespace InvoiceValidator
 		else
 		  throw new Exception("You must validate the invoice width Validate() method and the invoice must be valid.");
 	  }
+
+      protected void ParseToXmlDocument()
+      {
+          if (_xmlstring != null && _isvalid)
+          {
+              _xmldocument = new XmlDocument();
+
+              if (_fromfile)
+                  _xmldocument.Load(_xmlpath);
+              else
+                  _xmldocument.LoadXml(_xmlstring);
+          }
+          else
+              throw new Exception("You must validate the invoice width Validate() method and the invoice must be valid.");
+      }
 
 	  public static object Deserialize(XmlDocument xml, Type type)
 	  {
@@ -163,5 +230,23 @@ namespace InvoiceValidator
 		return o;
 	  }
 	  #endregion
-	}
+
+      #region Helpers
+      protected string UrlSchemaToDirectoryName(string urlschema)
+      {
+          string SchemaDirectoryName = String.Empty;
+
+          if (urlschema.StartsWith("http://") || urlschema.StartsWith("https://"))
+          {
+              if (urlschema.StartsWith("http://"))
+                  SchemaDirectoryName = urlschema.Substring("http://".Length);
+
+              if (urlschema.StartsWith("https://"))
+                  SchemaDirectoryName = urlschema.Substring("https://".Length);
+          }
+
+          return SchemaDirectoryName;
+      }
+      #endregion
+    }
 }

@@ -12,17 +12,20 @@ namespace ConsoleApplication1
         {
             try
             {
-                CFDI F = new CFDI(@"C:\Users\carlos\github\CFDI-CFD_Validator\InvoiceValidator\Dependencies\cfdv32.xsd",
-                                  @"C:\Users\carlos\github\CFDI-CFD_Validator\InvoiceValidator\Dependencies\\TimbreFiscalDigital.xsd",
-                                  @"C:\Users\carlos\Desktop\ZABE701111KR6CFDI0000009356.xml");
+                //CFDI F = new CFDI(@"C:\Users\carlos\Desktop\ZABE701111KR6CFDI0000009356.xml");
+                //CFDI F = new CFDI(@"C:\Users\carlos\Desktop\mala.xml");
+                CFDI F = new CFDI(@"C:\Users\carlos\Desktop\EjemploAddenda.XML");
 
-                F.Validate();
+                F.InitialzeValidation();
 
-                if (F.Messages.Count > 0)
+                if (F.Messages != null && F.Messages.Count > 0)
                     foreach (string Message in F.Messages)
                         Console.WriteLine(Message);
 
-                F.Generate();
+                if (F.IsValid)
+                    F.GenerateObj();
+                else
+                    Console.WriteLine("No es válido el CFDI");
 
                 Console.WriteLine(F.IsValid);
             }catch(Exception ex)
